@@ -12,7 +12,7 @@ public record OrderItemRequest(Guid ProductId, int Quantity);
 
 public class Facade
 {
-    private readonly INotificationFactory _notificationFactory;
+    private readonly INotificationFactory _notificationFactory; 
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _uow;
 

@@ -61,18 +61,16 @@ public class StockController : ControllerBase
     {
         var allStock = await _uow.Stock.GetAllAsync();
 
-        var builder = new StockReportBuilder()
-            .WithTitle("Warehouse Stock Report")
-            .GeneratedAt(DateTime.UtcNow)
-            .AddItems(allStock.Select(s => new StockReportItem
-            {
-                ProductName = s.Product.Name,
-                Sku = s.Product.Sku,
-                Quantity = s.QuantityOnHand,
-                Location = s.WarehouseLocation,
-                IsLowStock = s.QuantityOnHand <= s.ReorderLevel
-            }));
+        var items = allStock.Select(s => new StockReportItem
+        {
+            ProductName = s.Product.Name,
+            Sku = s.Product.Sku,
+            Quantity = s.QuantityOnHand,
+            Location = s.WarehouseLocation,
+            IsLowStock = s.QuantityOnHand <= s.ReorderLevel
+        });
 
-        return builder.Build();
+        var director = new StockReportDirector(new StockReportBuilder());
+        return director.BuildFullStockReport(items);
     }
 }

@@ -17,19 +17,16 @@ public class GetStockReportQueryHandler : IRequestHandler<GetStockReportQuery, S
     {
         var all = await _uow.Stock.GetAllAsync(ct);
 
-        var report = new StockReportBuilder()
-            .WithTitle("Warehouse Stock Report")
-            .GeneratedAt(DateTime.UtcNow)
-            .AddItems(all.Select(s => new StockReportItem
-            {
-                ProductName = s.Product?.Name ?? "Unknown",
-                Sku = s.Product?.Sku ?? "",
-                Quantity = s.QuantityOnHand,
-                Location = s.WarehouseLocation,
-                IsLowStock = s.QuantityOnHand <= s.ReorderLevel
-            }))
-            .Build();
+        var items = all.Select(s => new StockReportItem
+        {
+            ProductName = s.Product?.Name ?? "Unknown",
+            Sku = s.Product?.Sku ?? "",
+            Quantity = s.QuantityOnHand,
+            Location = s.WarehouseLocation,
+            IsLowStock = s.QuantityOnHand <= s.ReorderLevel
+        });
 
-        return report;
+        var director = new StockReportDirector(new StockReportBuilder());
+        return director.BuildFullStockReport(items);
     }
 }

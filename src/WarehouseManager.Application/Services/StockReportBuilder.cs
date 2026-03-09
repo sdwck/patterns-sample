@@ -9,7 +9,23 @@ public class StockReport
     public bool IncludeLowStockOnly { get; set; }
 }
 
-public class StockReportItem
+public interface IReportItem
+{
+    bool IsLowStock { get; }
+}
+
+public interface IReportBuilder<TReport, TItem> where TItem : IReportItem
+{
+    IReportBuilder<TReport, TItem> WithTitle(string title);
+    IReportBuilder<TReport, TItem> GeneratedAt(DateTime dt);
+    IReportBuilder<TReport, TItem> AddItem(TItem item);
+    IReportBuilder<TReport, TItem> AddItems(IEnumerable<TItem> items);
+    IReportBuilder<TReport, TItem> LowStockOnly();
+    IReportBuilder<TReport, TItem> WithSummary(string summary);
+    TReport Build();
+}
+
+public class StockReportItem : IReportItem
 {
     public string ProductName { get; set; } = string.Empty;
     public string Sku { get; set; } = string.Empty;
@@ -18,41 +34,41 @@ public class StockReportItem
     public bool IsLowStock { get; set; }
 }
 
-public class StockReportBuilder
+public class StockReportBuilder : IReportBuilder<StockReport, StockReportItem>
 {
     private readonly StockReport _report = new();
 
-    public StockReportBuilder WithTitle(string title)
+    public IReportBuilder<StockReport, StockReportItem> WithTitle(string title)
     {
         _report.Title = title;
         return this;
     }
 
-    public StockReportBuilder GeneratedAt(DateTime dt)
+    public IReportBuilder<StockReport, StockReportItem> GeneratedAt(DateTime dt)
     {
         _report.GeneratedAt = dt;
         return this;
     }
 
-    public StockReportBuilder AddItem(StockReportItem item)
+    public IReportBuilder<StockReport, StockReportItem> AddItem(StockReportItem item)
     {
         _report.Items.Add(item);
         return this;
     }
 
-    public StockReportBuilder AddItems(IEnumerable<StockReportItem> items)
+    public IReportBuilder<StockReport, StockReportItem> AddItems(IEnumerable<StockReportItem> items)
     {
         _report.Items.AddRange(items);
         return this;
     }
 
-    public StockReportBuilder LowStockOnly()
+    public IReportBuilder<StockReport, StockReportItem> LowStockOnly()
     {
         _report.IncludeLowStockOnly = true;
         return this;
     }
 
-    public StockReportBuilder WithSummary(string summary)
+    public IReportBuilder<StockReport, StockReportItem> WithSummary(string summary)
     {
         _report.Summary = summary;
         return this;
