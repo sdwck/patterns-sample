@@ -13,13 +13,13 @@ public class CategoryRepository : GenericRepository<Category>, ICategoryReposito
     public async Task<IReadOnlyList<Category>> GetRootCategoriesAsync(CancellationToken ct = default)
     {
         return await DbSet.Where(c => c.ParentCategoryId == null)
-            .Include(c => c.SubCategories).ThenInclude(c => c.SubCategories)
+            .Include(c => c.Children)
             .ToListAsync(ct);
     }
 
     public async Task<Category?> GetWithSubCategoriesAsync(Guid id, CancellationToken ct = default)
     {
-        return await DbSet.Include(c => c.SubCategories).ThenInclude(c => c.SubCategories)
+        return await DbSet.Include(c => c.Children)
             .FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 }

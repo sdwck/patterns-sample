@@ -10,7 +10,13 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Name).HasMaxLength(100).IsRequired();
-        builder.HasOne(c => c.ParentCategory).WithMany(c => c.SubCategories)
-            .HasForeignKey(c => c.ParentCategoryId).OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasOne(c => c.ParentCategory)
+            .WithMany()
+            .HasForeignKey(c => c.ParentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(c => c.Children)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

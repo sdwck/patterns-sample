@@ -22,7 +22,12 @@ public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuer
 
     private static CategoryDto Map(Category c)
     {
-        return new CategoryDto(c.Id, c.Name, c.Description, c.ParentCategoryId,
-            c.SubCategories.Select(Map).ToList());
+        return new CategoryDto(
+            c.Id, 
+            c.Name, 
+            c.Description, 
+            c.ParentCategoryId,
+            c.Children.OfType<Category>().Select(Map).ToList()
+        );
     }
 }

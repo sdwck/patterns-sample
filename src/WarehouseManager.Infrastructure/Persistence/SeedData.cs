@@ -21,8 +21,8 @@ public static class SeedData
         var computers = new Category
             { Name = "Computers", Description = "Laptops and desktops", ParentCategoryId = electronics.Id };
         var phones = new Category { Name = "Phones", Description = "Mobile phones", ParentCategoryId = electronics.Id };
-        electronics.SubCategories.Add(computers);
-        electronics.SubCategories.Add(phones);
+        electronics.Add(computers);
+        electronics.Add(phones);
         var clothing = new Category { Name = "Clothing", Description = "Apparel" };
         context.Categories.AddRange(electronics, computers, phones, clothing);
 

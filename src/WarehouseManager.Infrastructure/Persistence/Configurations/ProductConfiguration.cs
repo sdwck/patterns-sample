@@ -13,8 +13,17 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Sku).HasMaxLength(50).IsRequired();
         builder.HasIndex(p => p.Sku).IsUnique();
         builder.Property(p => p.Price).HasPrecision(18, 2);
-        builder.HasOne(p => p.Category).WithMany(c => c.Products).HasForeignKey(p => p.CategoryId);
-        builder.HasOne(p => p.Supplier).WithMany(s => s.Products).HasForeignKey(p => p.SupplierId);
-        builder.HasOne(p => p.Stock).WithOne(s => s.Product).HasForeignKey<Stock>(s => s.ProductId);
+        
+        builder.HasOne(p => p.Category)
+            .WithMany()
+            .HasForeignKey(p => p.CategoryId);
+            
+        builder.HasOne(p => p.Supplier)
+            .WithMany(s => s.Products)
+            .HasForeignKey(p => p.SupplierId);
+            
+        builder.HasOne(p => p.Stock)
+            .WithOne(s => s.Product)
+            .HasForeignKey<Stock>(s => s.ProductId);
     }
 }

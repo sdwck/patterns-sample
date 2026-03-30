@@ -51,7 +51,7 @@ public class AppDbContext : DbContext
             {
                 await _eventDispatcher.DispatchAsync(domainEvent, cancellationToken);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // ignored
             }
