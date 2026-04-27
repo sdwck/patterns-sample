@@ -30,6 +30,17 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
 
         if (result.IsFailure) return result;
 
+        if (request.Action.ToLower() == "cancel")
+        {
+            foreach (var item in order.Items)
+            {
+                var product = await _uow.Products.GetByIdAsync(item.ProductId, ct);
+                if (product?.Stock is null) continue;
+
+                product.Stock.Restock(item.Quantity);
+            }
+        }
+
         _uow.Orders.Update(order);
         await _uow.SaveChangesAsync(ct);
         return Result.Success();

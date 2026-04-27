@@ -8,8 +8,7 @@ public class IteratorTests
 {
     private static List<Product> Products()
     {
-        return
-        [
+        return[
             new() { Name = "Alpha", Price = 30, Sku = "A" },
             new() { Name = "Beta", Price = 10, Sku = "B" },
             new() { Name = "Charlie", Price = 20, Sku = "C" },
@@ -25,7 +24,7 @@ public class IteratorTests
         var n = 0;
         while (it.HasNext())
         {
-            it.MoveNext();
+            it.Next();
             n++;
         }
 
@@ -45,8 +44,7 @@ public class IteratorTests
         var prices = new List<decimal>();
         while (it.HasNext())
         {
-            it.MoveNext();
-            prices.Add(it.Current.Price);
+            prices.Add(it.Next().Price);
         }
 
         prices.Should().BeInAscendingOrder();
@@ -60,22 +58,10 @@ public class IteratorTests
         var names = new List<string>();
         while (it.HasNext())
         {
-            it.MoveNext();
-            names.Add(it.Current.Name);
+            names.Add(it.Next().Name);
         }
 
         names.Should().HaveCount(2);
         names[0].Should().Be("Charlie");
-    }
-
-    [Fact]
-    public void Reset_Restarts()
-    {
-        var it = new ProductCollection(Products()).CreateIterator();
-        it.MoveNext();
-        it.MoveNext();
-        it.Reset();
-        it.MoveNext();
-        it.Current.Name.Should().Be(Products()[0].Name);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace WarehouseManager.Domain.Iterators;
 
-public class ProductCollection : IIterableCollection<Product>
+public class ProductCollection : IAggregate<Product>
 {
     private readonly List<Product> _products;
 
@@ -39,7 +39,7 @@ public class ProductCollection : IIterableCollection<Product>
     private class ProductIterator : IIterator<Product>
     {
         private readonly List<Product> _items;
-        private int _position = -1;
+        private int _position = 0;
 
         public ProductIterator(List<Product> items)
         {
@@ -48,23 +48,13 @@ public class ProductCollection : IIterableCollection<Product>
 
         public bool HasNext()
         {
-            return _position + 1 < _items.Count;
+            return _position < _items.Count;
         }
 
-        public Product Current =>
-            _position >= 0 && _position < _items.Count
-                ? _items[_position]
-                : throw new InvalidOperationException("Iterator not positioned on valid element.");
-
-        public void MoveNext()
+        public Product Next()
         {
             if (!HasNext()) throw new InvalidOperationException("No more elements.");
-            _position++;
-        }
-
-        public void Reset()
-        {
-            _position = -1;
+            return _items[_position++];
         }
     }
 }

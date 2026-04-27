@@ -12,9 +12,9 @@ public class CompositeTests
         var c1 = new Category { Name = "C1", ParentCategory = root };
         var c2 = new Category { Name = "C2", ParentCategory = root };
         var gc = new Category { Name = "GC", ParentCategory = c2 };
-        root.SubCategories.Add(c1);
-        root.SubCategories.Add(c2);
-        c2.SubCategories.Add(gc);
+        root.Add(c1);
+        root.Add(c2);
+        c2.Add(gc);
 
         root.GetAllDescendants().Should().HaveCount(3);
     }

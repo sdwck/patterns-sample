@@ -21,11 +21,14 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20,
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null, [FromQuery] Guid? categoryId = null,
-        [FromQuery] string? sortBy = null, [FromQuery] bool sortDescending = false)
+        [FromQuery] string? sortBy = null, [FromQuery] bool sortDescending = false,
+        [FromQuery] bool onlyInStock = false, [FromQuery] bool includeInactive = false)
     {
-        return Ok(await _mediator.Send(new GetAllProductsQuery(page, pageSize, search, categoryId, sortBy, sortDescending)));
+        var query = new GetAllProductsQuery(page, pageSize, search, categoryId, sortBy, sortDescending, onlyInStock, includeInactive);
+        return Ok(await _mediator.Send(query));
     }
 
     [HttpGet("{id:guid}")]
@@ -45,8 +48,7 @@ public class ProductsController : ControllerBase
             : BadRequest(new { error = r.Error });
     }
 
-    [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [HttpPut("{id:guid}")][Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductCommand cmd)
     {
         if (id != cmd.Id) return BadRequest(new { error = "ID mismatch." });
@@ -55,7 +57,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var r = await _mediator.Send(new DeleteProductCommand(id));

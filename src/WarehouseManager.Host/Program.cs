@@ -35,7 +35,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("Content-Disposition")));
 
 var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();

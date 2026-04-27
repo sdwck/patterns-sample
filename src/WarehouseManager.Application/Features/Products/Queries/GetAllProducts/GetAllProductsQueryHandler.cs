@@ -20,16 +20,18 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
     {
         var all = await _uow.Products.GetAllAsync(ct);
 
-        Func<Product, bool>? filter = null;
-        if (!string.IsNullOrWhiteSpace(request.Search) || request.CategoryId.HasValue)
-            filter = p =>
-            {
-                var matchSearch = string.IsNullOrWhiteSpace(request.Search)
-                                  || p.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase)
-                                  || p.Sku.Contains(request.Search, StringComparison.OrdinalIgnoreCase);
-                var matchCategory = !request.CategoryId.HasValue || p.CategoryId == request.CategoryId.Value;
-                return matchSearch && matchCategory;
-            };
+        Func<Product, bool> filter = p =>
+        {
+            if (!p.IsActive && !request.IncludeInactive) return false;
+            if (request.OnlyInStock && (p.Stock == null || p.Stock.QuantityOnHand <= 0)) return false;
+
+            var matchSearch = string.IsNullOrWhiteSpace(request.Search)
+                              || p.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase)
+                              || p.Sku.Contains(request.Search, StringComparison.OrdinalIgnoreCase);
+            var matchCategory = !request.CategoryId.HasValue || p.CategoryId == request.CategoryId.Value;
+            
+            return matchSearch && matchCategory;
+        };
 
         Func<Product, object> orderBy = request.SortBy?.ToLower() switch
         {
@@ -44,8 +46,7 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
         var items = new List<ProductDto>();
         while (iterator.HasNext())
         {
-            iterator.MoveNext();
-            var p = iterator.Current;
+            var p = iterator.Next();
             items.Add(new ProductDto(
                 p.Id, p.Name, p.Description, p.Sku, p.Price,
                 p.CategoryId, p.Category.Name, p.SupplierId,

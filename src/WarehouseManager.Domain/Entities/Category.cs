@@ -2,7 +2,6 @@
 
 namespace WarehouseManager.Domain.Entities;
 
-
 public abstract class WarehouseComponent : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
@@ -39,18 +38,20 @@ public class Category : WarehouseComponent
     public Guid? ParentCategoryId { get; set; }
     public Category? ParentCategory { get; set; }
 
-    private readonly List<WarehouseComponent> _children = new();
-    
-    public IReadOnlyCollection<WarehouseComponent> Children => _children.AsReadOnly();
+    private readonly List<Category> _children = new();
+
+    public IReadOnlyCollection<Category> Children => _children.AsReadOnly();
 
     public override void Add(WarehouseComponent component)
     {
-        _children.Add(component);
+        if (component is Category c)
+            _children.Add(c);
     }
 
     public override void Remove(WarehouseComponent component)
     {
-        _children.Remove(component);
+        if (component is Category c)
+            _children.Remove(c);
     }
 
     public override WarehouseComponent GetChild(int index)
@@ -73,12 +74,9 @@ public class Category : WarehouseComponent
         foreach (var child in _children)
         {
             yield return child;
-            if (child is Category category)
+            foreach (var descendant in child.GetAllDescendants())
             {
-                foreach (var descendant in category.GetAllDescendants())
-                {
-                    yield return descendant;
-                }
+                yield return descendant;
             }
         }
     }

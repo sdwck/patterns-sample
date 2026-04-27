@@ -27,7 +27,7 @@ public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuer
             c.Name, 
             c.Description, 
             c.ParentCategoryId,
-            c.Children.OfType<Category>().Select(Map).ToList()
+            c.Children.Select(Map).ToList()
         );
     }
 }

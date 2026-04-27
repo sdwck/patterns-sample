@@ -10,5 +10,7 @@ public record GetAllProductsQuery(
     string? Search = null,
     Guid? CategoryId = null,
     string? SortBy = null,
-    bool SortDescending = false)
+    bool SortDescending = false,
+    bool OnlyInStock = false,
+    bool IncludeInactive = false)
     : IRequest<PagedResult<ProductDto>>;

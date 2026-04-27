@@ -7,6 +7,5 @@ public class RestockProductCommandValidator : AbstractValidator<RestockProductCo
     public RestockProductCommandValidator()
     {
         RuleFor(x => x.ProductId).NotEmpty();
-        RuleFor(x => x.Quantity).GreaterThan(0);
     }
 }

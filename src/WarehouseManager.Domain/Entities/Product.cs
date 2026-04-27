@@ -8,6 +8,7 @@ public class Product : BaseEntity
     public string? Description { get; set; }
     public string Sku { get; set; } = string.Empty;
     public decimal Price { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;

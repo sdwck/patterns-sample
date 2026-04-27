@@ -19,13 +19,15 @@ public static class OrderDomainService
             ShippingAddress = shippingAddress
         };
 
+        var context = new DiscountContext(discountStrategy);
+
         foreach (var (product, stock, quantity) in lineItems)
         {
             var deductResult = stock.Deduct(quantity);
             if (deductResult.IsFailure)
                 return Result.Failure<Order>(deductResult.Error!);
 
-            var discount = discountStrategy.CalculateDiscount(product.Price, quantity);
+            var discount = context.CalculateDiscount(product.Price, quantity);
             var effectivePrice = quantity > 0
                 ? product.Price - discount / quantity
                 : product.Price;
