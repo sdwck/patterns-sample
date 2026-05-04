@@ -19,20 +19,22 @@ interface ProductDto {
 interface CategoryDto {
     id: string
     name: string
+    parentCategoryId?: string | null
+    subCategories?: CategoryDto[]
 }
 
 export function ProductsPage() {
     const queryClient = useQueryClient()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
-    const [isCategoryOpen, setIsCategoryOpen] = useState(false)
-    const [isRestockOpen, setIsRestockOpen] = useState(false)
+    const[isCategoryOpen, setIsCategoryOpen] = useState(false)
+    const[isRestockOpen, setIsRestockOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
-    const [editingProduct, setEditingProduct] = useState<ProductDto | null>(null)
+    const[editingProduct, setEditingProduct] = useState<ProductDto | null>(null)
     const [search, setSearch] = useState('')
 
     const { data: productsData, isLoading } = useQuery({
-        queryKey: ['products', search],
+        queryKey:['products', search],
         queryFn: async () => {
             const { data } = await api.get(`/products?search=${search}&pageSize=50`)
             return data
@@ -141,12 +143,13 @@ export function ProductsPage() {
             <CreateProductModal
                 isOpen={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
-                categories={categories || []}
+                categories={categories ||[]}
             />
 
             <CreateCategoryModal
                 isOpen={isCategoryOpen}
                 onClose={() => setIsCategoryOpen(false)}
+                categories={categories ||[]}
             />
 
             {selectedProductId && (
@@ -168,16 +171,16 @@ export function ProductsPage() {
                         setEditingProduct(null)
                     }}
                     product={editingProduct}
-                    categories={categories || []}
+                    categories={categories ||[]}
                 />
             )}
         </div>
     )
 }
 
-function CreateCategoryModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+function CreateCategoryModal({ isOpen, onClose, categories }: { isOpen: boolean, onClose: () => void, categories: CategoryDto[] }) {
     const queryClient = useQueryClient()
-    const [formData, setFormData] = useState({ name: '', description: '' })
+    const [formData, setFormData] = useState({ name: '', description: '', parentCategoryId: '' })
     const [error, setError] = useState<string | null>(null)
 
     const mutation = useMutation({
@@ -185,7 +188,7 @@ function CreateCategoryModal({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['categories'] })
             onClose()
-            setFormData({ name: '', description: '' })
+            setFormData({ name: '', description: '', parentCategoryId: '' })
         },
         onError: (err: any) => setError(err.response?.data?.error || 'Creation failed')
     })
@@ -193,21 +196,45 @@ function CreateCategoryModal({ isOpen, onClose }: { isOpen: boolean, onClose: ()
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
-        mutation.mutate(formData)
+        
+        mutation.mutate({
+            name: formData.name,
+            description: formData.description,
+            parentCategoryId: formData.parentCategoryId || null 
+        })
     }
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Create Category">
             <form onSubmit={handleSubmit} className="space-y-4">
                 {error && <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded">{error}</div>}
+                
                 <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1">Name</label>
                     <Input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                 </div>
+                
                 <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
                     <Input value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                 </div>
+                
+                <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">Parent Category</label>
+                    <select
+                        className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        value={formData.parentCategoryId}
+                        onChange={e => setFormData({ ...formData, parentCategoryId: e.target.value })}
+                    >
+                        <option value="">None (Root Category)</option>
+                        {flattenCategories(categories).map(c => (
+                            <option key={c.id} value={c.id}>
+                                {'— '.repeat(c.level) + c.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                
                 <div className="flex justify-end gap-3 pt-4">
                     <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
                     <Button type="submit" disabled={mutation.isPending}>Create</Button>
@@ -314,7 +341,7 @@ function EditProductModal({
             price: product.price.toString(),
             categoryId: product.categoryId
         })
-    }, [product])
+    },[product])
 
     const mutation = useMutation({
         mutationFn: () =>
@@ -396,7 +423,7 @@ function RestockModal({ isOpen, onClose, productId }: { isOpen: boolean, onClose
     const mutation = useMutation({
         mutationFn: (qty: number) => api.post('/stock/restock', { productId, quantity: qty }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey:['products'] })
             queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
             onClose()
         }
@@ -419,7 +446,7 @@ function RestockModal({ isOpen, onClose, productId }: { isOpen: boolean, onClose
 }
 
 function flattenCategories(categories: any[], level = 0): any[] {
-    return categories.flatMap(c => [
+    return categories.flatMap(c =>[
         { ...c, level },
         ...flattenCategories(c.subCategories || [], level + 1)
     ])
